@@ -1,36 +1,52 @@
-import { Component ,OnInit} from '@angular/core';
+import { Component, OnInit,OnDestroy } from '@angular/core';
 import { Product } from 'src/app/models/product.model';
 import { CartService } from 'src/app/services/cart.service';
+import { Subscription } from "rxjs";
+import { StoreService } from 'src/app/services/store.service';
 
-const ROWS_HEIGHT:{ [id:number]:number} = {1:400,3:335,4:350}
+const ROWS_HEIGHT: { [id: number]: number } = { 1: 400, 3: 335, 4: 350 }
 @Component({
   selector: 'app-home',
-  templateUrl:'./home.component.html'
+  templateUrl: './home.component.html'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit,OnDestroy {
   cols = 3;
   rowHeight = ROWS_HEIGHT[this.cols]
-  category:string|undefined
-  constructor(private cartService:CartService){
+  category: string | undefined
+  products: Array<Product> | undefined
+  sort = 'desc'
+  count = '12'
+  productsSubscription: Subscription | undefined
+  constructor(private cartService: CartService, private storeService: StoreService) {
 
   }
   ngOnInit(): void {
-      
+    this.getProducts();
   }
-  onColumnsChnage(colNum:number):void{
+  getProducts(): void {
+    this.productsSubscription = this.storeService.getAllProducts(this.count, this.sort).subscribe((_products) => {
+      this.products = _products
+    })
+  }
+  onColumnsChnage(colNum: number): void {
     this.cols = colNum
     this.rowHeight = ROWS_HEIGHT[this.cols]
   }
-  onShowCategory(Category:string):void{
+  onShowCategory(Category: string): void {
     this.category = Category
   }
-  onAddtoCart(product:Product):void{
+  onAddtoCart(product: Product): void {
     this.cartService.addToCart({
-      productImg:product.image,
-      name:product.title,
-      price:product.price,
-      quantity:1,
-      id:product.id
+      product: product.image,
+      name: product.title,
+      price: product.price,
+      quantity: 1,
+      id: product.id
     });
+  }
+  ngOnDestroy(): void {
+      if(this.productsSubscription){
+        this.productsSubscription.unsubscribe()
+      }
   }
 }
