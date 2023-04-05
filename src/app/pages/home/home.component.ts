@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit,OnDestroy {
     this.getProducts();
   }
   getProducts(): void {
-    this.productsSubscription = this.storeService.getAllProducts(this.count, this.sort).subscribe((_products) => {
+    this.productsSubscription = this.storeService.getAllProducts(this.count, this.sort, this.category).subscribe((_products) => {
       this.products = _products
     })
   }
@@ -34,6 +34,7 @@ export class HomeComponent implements OnInit,OnDestroy {
   }
   onShowCategory(Category: string): void {
     this.category = Category
+    this.getProducts()
   }
   onAddtoCart(product: Product): void {
     this.cartService.addToCart({
@@ -43,6 +44,14 @@ export class HomeComponent implements OnInit,OnDestroy {
       quantity: 1,
       id: product.id
     });
+  }
+  onItemsCountChange(newcount:number):void{
+    this.count = newcount.toString()
+    this.getProducts()
+  }
+  onSortChange(newSort:string):void{
+    this.sort = newSort
+    this.getProducts()
   }
   ngOnDestroy(): void {
       if(this.productsSubscription){
